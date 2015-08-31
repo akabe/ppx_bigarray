@@ -1,0 +1,13 @@
+language: c
+sudo: false
+cache: apt
+
+script: bash -eu .travis-ci.sh
+
+os:
+  - linux
+env:
+  matrix:
+    - OCAML_VERSION=4.02.1 OPAM_VERSION=1.2.2
+    - OCAML_VERSION=4.02.2 OPAM_VERSION=1.2.2
+    - OCAML_VERSION=4.02.3 OPAM_VERSION=1.2.2
