@@ -11,6 +11,12 @@ Install
 -------
 
 ```
+opam install ppx_bigarray
+```
+
+or
+
+```
 ./configure
 make
 make install
@@ -36,7 +42,24 @@ print_int x.{1,2} (* print "23" *)
 ```
 
 In this code, elements of a big array are given as a list of lists, but
-you can use an array of arrays.
+you can use an array of arrays:
+
+```OCaml
+let x = [%bigarray2.int.c
+          [|
+            [|11; 12; 13; 14|];
+            [|21; 22; 23; 24|];
+            [|31; 32; 33; 34|];
+          |]
+        ] in
+print_int x.{1,2} (* print "23" *)
+```
+
+`[%bigarray2.int.c ELEMENTS]` is a syntax of big array literals. `ELEMENTS`
+must have a syntax of a list literal (`[...]`) or an array literal (`[|...|]`).
+You cannot give an expression that returns a list or an array (such as
+`let x = [...] in [%bigarray2.int.c x]`) since `[%bigarray2.int.c ...]` is NOT
+the function that converts a list or an array into a big array.
 
 ### Syntax
 
@@ -52,7 +75,9 @@ you can use an array of arrays.
   (that has type `Bigarray.Genarray.t`). `ELEMENTS` is a nested list or
   a nested array.
 
-| `KIND`                       | Corresponding variable                                  |
+You can specify the following identifiers as `KIND` and `LAYOUT`:
+
+| `KIND`                       | Corresponding big array kind                            |
 |------------------------------|---------------------------------------------------------|
 | `int8_signed` or `sint8`     | `Bigarray.int8_signed`                                  |
 | `int8_unsigned` or `uint8`   | `Bigarray.int8_unsigned`                                |
@@ -69,7 +94,7 @@ you can use an array of arrays.
 | `char`                       | `Bigarray.char`                                         |
 | otherwise                    | (to refer the variable that has a given name as a kind) |
 
-| `LAYOUT`                      | Corresponding variable    |
-|-------------------------------|---------------------------|
-| `c` or `c_layout`             | `Bigarray.c_layout`       |
-| `fortran` or `fortran_layout` | `Bigarray.fortran_layout` |
+| `LAYOUT`                      | Corresponding big array layout |
+|-------------------------------|--------------------------------|
+| `c` or `c_layout`             | `Bigarray.c_layout`            |
+| `fortran` or `fortran_layout` | `Bigarray.fortran_layout`      |
