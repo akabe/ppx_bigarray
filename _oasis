@@ -12,6 +12,8 @@ Plugins:                META (0.4), StdFiles (0.4), DevFiles (0.4)
 XStdFilesAUTHORS:       false
 XStdFilesREADME:        false
 BuildTools:             ocamlbuild
+AlphaFeatures:          ocamlbuild_more_args
+XOCamlbuildPluginTags:  package(cppo_ocamlbuild)
 
 Library ppx_bigarray
   Path:                 src

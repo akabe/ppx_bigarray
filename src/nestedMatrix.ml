@@ -139,12 +139,14 @@ struct
       let layout = ident ?loc (string_of_bigarray_layout layout) in
       let dim = int ?loc dim in
       let f = ident ?loc "Bigarray.Array1.create" in
-      apply ?loc ?attrs f [("", kind); ("", layout); ("", dim)]
+      apply ?loc ?attrs f [(Compat.nolabel, kind); (Compat.nolabel, layout);
+                           (Compat.nolabel, dim)]
 
     let array1_set ?loc ?attrs ba index rhs =
       let index = int ?loc index in
       let f = ident ?loc "Bigarray.Array1.unsafe_set" in
-      apply ?loc ?attrs f [("", ba); ("", index); ("", rhs)]
+      apply ?loc ?attrs f [(Compat.nolabel, ba); (Compat.nolabel, index);
+                           (Compat.nolabel, rhs)]
 
     let array1_set_all ?loc ?attrs ~ret ba vals =
       vals
@@ -154,7 +156,7 @@ struct
 
     let genarray_of_array1 ?loc ?attrs ba =
       let f = ident ?loc "Bigarray.genarray_of_array1" in
-      apply ?loc ?attrs f [("", ba)]
+      apply ?loc ?attrs f [(Compat.nolabel, ba)]
 
     let reshape_1 ?loc ?attrs ba size =
       let n = match size with
@@ -164,7 +166,7 @@ struct
                  "Error: @[This literal expects 1-dimensional big array@\n\
                   but the size is %s@." (string_of_size size) () in
       let f = ident ?loc "Bigarray.reshape_1" in
-      apply ?loc ?attrs f [("", ba); ("", int ?loc n)]
+      apply ?loc ?attrs f [(Compat.nolabel, ba); (Compat.nolabel, int ?loc n)]
 
     let reshape_2 ?loc ?attrs ba size =
       let (m, n) = match size with
@@ -175,7 +177,8 @@ struct
                  "Error: @[This literal expects 2-dimensional big array@\n\
                   but the size is %s@." (string_of_size size) () in
       let f = ident ?loc "Bigarray.reshape_2" in
-      apply ?loc ?attrs f [("", ba); ("", int ?loc m); ("", int ?loc n)]
+      apply ?loc ?attrs f [(Compat.nolabel, ba); (Compat.nolabel, int ?loc m);
+                           (Compat.nolabel, int ?loc n)]
 
     let reshape_3 ?loc ?attrs ba size =
       let (m, n, k) = match size with
@@ -187,13 +190,14 @@ struct
                  "Error: @[This literal expects 3-dimensional big array@\n\
                   but the size is %s@." (string_of_size size) () in
       let f = ident ?loc "Bigarray.reshape_3" in
-      apply ?loc ?attrs f [("", ba); ("", int ?loc m);
-                           ("", int ?loc n); ("", int ?loc k)]
+      apply ?loc ?attrs f [(Compat.nolabel, ba); (Compat.nolabel, int ?loc m);
+                           (Compat.nolabel, int ?loc n);
+                           (Compat.nolabel, int ?loc k)]
 
     let reshape ?loc ?attrs ba size =
       let f = ident ?loc "Bigarray.reshape" in
       let dims = array ?loc (List.map (int ?loc ?attrs:None) size) in
-      apply ?loc ?attrs f [("", ba); ("", dims)]
+      apply ?loc ?attrs f [(Compat.nolabel, ba); (Compat.nolabel, dims)]
   end
 end
 

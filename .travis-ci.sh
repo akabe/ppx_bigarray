@@ -1,5 +1,5 @@
 # Required OPAM packages
-OPAM_DEPS="ocamlfind ounit"
+OPAM_DEPS="ocamlfind cppo ounit"
 
 export PREFIX="./usr"
 export BINDIR="$PREFIX/bin"

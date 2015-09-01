@@ -29,4 +29,5 @@ true: annot, bin_annot
 # OASIS_STOP
 
 <*/*.ml{,i}>: warn(A-4-33-41-42-43-34-44), safe_string, strict_sequence, strict_formats
+<src/compat.ml>: cppo_V_OCAML
 <test/*.ml{,i}>: ppx_bigarray
