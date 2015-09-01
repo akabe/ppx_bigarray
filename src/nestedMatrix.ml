@@ -143,7 +143,7 @@ struct
 
     let array1_set ?loc ?attrs ba index rhs =
       let index = int ?loc index in
-      let f = ident ?loc "Bigarray.Array1.set" in
+      let f = ident ?loc "Bigarray.Array1.unsafe_set" in
       apply ?loc ?attrs f [("", ba); ("", index); ("", rhs)]
 
     let array1_set_all ?loc ?attrs ~ret ba vals =
