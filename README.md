@@ -61,7 +61,7 @@ You cannot give an expression that returns a list or an array (such as
 `let x = [...] in [%bigarray2.int.c x]`) since `[%bigarray2.int.c ...]` is NOT
 the function that converts a list or an array into a big array.
 
-### Syntax
+### Basic syntax
 
 - `[%bigarray1.KIND.LAYOUT ELEMENTS]` is a one-dimensional big array
   (that has type `Bigarray.Array1.t`). `ELEMENTS` is a list or an array.
@@ -98,3 +98,21 @@ You can specify the following identifiers as `KIND` and `LAYOUT`:
 |-------------------------------|--------------------------------|
 | `c` or `c_layout`             | `Bigarray.c_layout`            |
 | `fortran` or `fortran_layout` | `Bigarray.fortran_layout`      |
+
+### Padding
+
+By default, `ppx_bigarray` warns non-rectangular big array literals in compile time,
+and lacked elements are uninitialized.
+While, you can inhibit the warning by using `[@bigarray.padding EXPRESSION]`:
+
+```OCaml
+let x = [%bigarray2.int.c
+          [
+            [11; 12; 13; 14];
+            [21; 22; 23];
+            [31; 32];
+          ] [@bigarray.padding 0]
+        ]
+```
+
+In this case, lacked elements are initialized by `0`.
