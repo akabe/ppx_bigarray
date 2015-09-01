@@ -1,6 +1,6 @@
 # OASIS_START
-# DO NOT EDIT (digest: 8800cf626c65c64f6d5594997a9040d8)
-version = "0.0.0"
+# DO NOT EDIT (digest: 856905c36fd54623b15a1bb667d0492c)
+version = "0.0.1"
 description = "A PPX extension for providing big array literals in OCaml"
 archive(byte) = "ppx_bigarray.cma"
 archive(byte, plugin) = "ppx_bigarray.cma"
