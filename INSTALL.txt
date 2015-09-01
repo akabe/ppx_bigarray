@@ -1,5 +1,5 @@
 (* OASIS_START *)
-(* DO NOT EDIT (digest: c6609f2b040129e7277d660e5fda561b) *)
+(* DO NOT EDIT (digest: 39c464d022904ad9e7761c55a2fecea0) *)
 
 This is the INSTALL file for the ppx_bigarray distribution.
 
@@ -14,6 +14,7 @@ In order to compile this package, you will need:
 * ocaml (>= 4.02.1) for all, test test
 * findlib
 * compiler-libs for executable ppx_bigarray
+* batteries for executable ppx_bigarray
 * oUnit for executable test
 
 Installing

@@ -18,6 +18,10 @@ val check_rect : int list -> ('a, 'b) t -> (int * ('a, 'b) t) list
 (** [string_of_size size] returns a string representation of [size]. *)
 val string_of_size : int list -> string
 
+(** [pad size mat x y] adds [Leaf (x, y)] to each nodes in [mat] and forms
+    [mat] into a rectangle. *)
+val pad : int list -> ('a, 'b) t -> 'a -> 'b -> ('a, 'b) t
+
 (** {2 Conversion from OCaml expressions} *)
 
 val of_expression : Parsetree.expression -> (Location.t, Parsetree.expression) t

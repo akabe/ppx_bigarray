@@ -4,6 +4,7 @@
    This software is distributed under MIT License
    See LICENSE.txt for details. *)
 
+open Batteries
 open Format
 open Ast_helper
 open Ast_mapper
@@ -41,8 +42,7 @@ let bigarray_layout_of_string ?loc = function
   | "fortran" | "fortran_layout" -> NestedMatrix.Fortran_layout
   | layout -> Error.exnf ?loc "Unknown big array layout `%s'" layout ()
 
-let check_nested_matrix mat =
-  let size = NestedMatrix.size mat in
+let check_nested_matrix size mat =
   let msg_head =
     sprintf "This %d-dimensional big array literal expects size %s"
       (List.length size) (NestedMatrix.string_of_size size) in
@@ -62,16 +62,37 @@ let check_nested_matrix mat =
       (attribute_of_warning loc msg) :: acc
   in
   let errors = NestedMatrix.check_rect size mat in
-  let warnings = List.fold_left gather_warnings [] errors in
-  (size, warnings)
+  List.fold_left gather_warnings [] errors
 
-let convert loc ba_type kind layout = function
+let get_padding loc attrs =
+  match List.partition (fun (x, _) -> x.txt = "bigarray.padding") attrs with
+  | ([], attrs') -> (None, attrs')
+  | ([(_, payload)], attrs') ->
+    begin
+      match payload with
+      | PStr [{ pstr_desc = Pstr_eval (expr, _); _ }] -> (Some expr, attrs')
+      | _ ->
+        Error.exnf ~loc
+          "Syntax Error: @[This should be [@@bigarray.padding expression]@]" ()
+    end
+  | _ ->
+    Error.exnf ~loc "Error: @[Duplicated bigarray.padding attributes@]" ()
+
+let map_ext_bigarray loc attrs ba_type kind layout = function
   | PStr [{ pstr_desc = Pstr_eval (expr, _); _ }] -> (* [%ext expression] *)
+    let (padding, attrs') = get_padding loc expr.pexp_attributes in
     let mat = NestedMatrix.of_expression expr in
-    let (size, warnings) = check_nested_matrix mat in
-    NestedMatrix.to_expression ~loc ~attrs:warnings
+    let size = NestedMatrix.size mat in
+    let (mat', warnings) =
+      match padding with
+      | None -> (mat, check_nested_matrix size mat)
+      | Some ep -> (* Padding inhibits warnings *)
+        ignore (check_nested_matrix size mat);
+        (NestedMatrix.pad size mat ep.pexp_loc ep, [])
+    in
+    NestedMatrix.to_expression ~loc ~attrs:(warnings @ attrs @ attrs')
       ba_type (bigarray_kind_of_string kind)
-      (bigarray_layout_of_string ~loc layout) size mat
+      (bigarray_layout_of_string ~loc layout) size mat'
   | _ -> Error.exnf ~loc
            "Syntax Error: @[This expression should be a list or an array@ \
             syntactically@]" ()
@@ -81,23 +102,26 @@ let bigarray_mapper =
   let expr self e = match e with
     | { pexp_desc = Pexp_extension ({txt; _}, payload); _ } ->
       begin
+        let loc = e.pexp_loc in
+        let attrs = self.attributes self e.pexp_attributes in
         try
           match split '.' 0 txt with
           | ["bigarray1"; kind; layout] ->
-            convert e.pexp_loc NestedMatrix.Array1 kind layout payload
+            map_ext_bigarray loc attrs NestedMatrix.Array1 kind layout payload
           | ["bigarray2"; kind; layout] ->
-            convert e.pexp_loc NestedMatrix.Array2 kind layout payload
+            map_ext_bigarray loc attrs NestedMatrix.Array2 kind layout payload
           | ["bigarray3"; kind; layout] ->
-            convert e.pexp_loc NestedMatrix.Array3 kind layout payload
+            map_ext_bigarray loc attrs NestedMatrix.Array3 kind layout payload
           | ["bigarray"; kind; layout] ->
-            convert e.pexp_loc NestedMatrix.Genarray kind layout payload
+            map_ext_bigarray loc attrs NestedMatrix.Genarray kind layout payload
           | _ -> super.expr self e
         with
-        | Location.Error error -> Exp.extension (extension_of_error error)
+        | Location.Error error ->
+          Exp.extension ~loc ~attrs (extension_of_error error)
       end
     | _ -> super.expr self e
   in
-  { super with expr }
+  { super with expr; }
 
 let () =
   match Sys.argv with

@@ -59,6 +59,25 @@ let test_array3_int_fortran () =
      [|[|[|111; 112; 113|]; [|121; 122; 123|]; [|131; 132; 133|]|];
        [|[|211; 212; 213|]; [|221; 222; 223|]; [|231; 232; 233|]|]|] ])
 
+let test_padding_c () =
+  let mk arr = Array3.of_array int c_layout arr in
+  "2x3x3" @?
+  (mk [|[|[|111; 112; 113|]; [|121; 122; 123|]; [|131; 0; 0|]|];
+        [|[|211; 212; 213|]; [|221; 222;   0|]; [|  0; 0; 0|]|]|]
+   = [%bigarray3.int.c
+     [|[|[|111; 112; 113|]; [|121; 122; 123|]; [|131;         |]|];
+       [|[|211; 212; 213|]; [|221; 222;    |];                |]|]
+       [@bigarray.padding 0] ])
+let test_padding_fortran () =
+  let mk arr = Array3.of_array int fortran_layout arr in
+  "2x3x3" @?
+  (mk [|[|[|111; 112; 113|]; [|121; 122; 123|]; [|131; 0; 0|]|];
+        [|[|211; 212; 213|]; [|221; 222;   0|]; [|  0; 0; 0|]|]|]
+   = [%bigarray3.int.fortran
+     [|[|[|111; 112; 113|]; [|121; 122; 123|]; [|131;         |]|];
+       [|[|211; 212; 213|]; [|221; 222;    |];                |]|]
+       [@bigarray.padding 0] ])
+
 let suite =
   "ppx_bigarray" >::: [
     "array1,kind=int,layout=C" >:: test_array1_int_c;
@@ -67,6 +86,8 @@ let suite =
     "array2,kind=int,layout=Fortran" >:: test_array2_int_fortran;
     "array3,kind=int,layout=C" >:: test_array3_int_c;
     "array3,kind=int,layout=Fortran" >:: test_array3_int_fortran;
+    "padding,layout=C" >:: test_padding_c;
+    "padding,layout=Fortran" >:: test_padding_fortran;
   ]
 
 let () = run_test_tt_main suite |> ignore

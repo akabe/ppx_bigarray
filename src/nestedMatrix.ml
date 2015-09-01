@@ -4,6 +4,8 @@
    This software is distributed under MIT License
    See LICENSE.txt for details. *)
 
+open Batteries
+
 type ('a, 'b) t =
   | Leaf of 'a * 'b
   | Node of 'a * ('a, 'b) t list
@@ -40,6 +42,25 @@ let string_of_size size =
   size
   |> List.map string_of_int
   |> String.concat "x"
+
+let make_padding x y =
+  let rec aux = function
+    | [] -> Leaf (x, y)
+    | n :: size -> Node (x, List.init n (fun _ -> aux size))
+  in
+  aux
+
+let pad size root x y =
+  let rec aux size node = match size, node with
+    | m :: size', Node (x, children) ->
+      let children' = List.map (aux size') children in
+      let n = List.length children in
+      if m = n then Node (x, children')
+      else if m < n then Node (x, List.take m children')
+      else Node (x, children' @ List.make (m - n) (make_padding x y size'))
+    | _ -> node
+  in
+  aux size root
 
 (** {2 Conversion from OCaml expressions} *)
 
