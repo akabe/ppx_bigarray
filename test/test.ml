@@ -68,6 +68,7 @@ let test_padding_c () =
      [|[|[|111; 112; 113|]; [|121; 122; 123|]; [|131;         |]|];
        [|[|211; 212; 213|]; [|221; 222;    |];                |]|]
        [@bigarray.padding 0] ])
+
 let test_padding_fortran () =
   let mk arr = Array3.of_array int fortran_layout arr in
   "2x3x3" @?
@@ -77,6 +78,23 @@ let test_padding_fortran () =
      [|[|[|111; 112; 113|]; [|121; 122; 123|]; [|131;         |]|];
        [|[|211; 212; 213|]; [|221; 222;    |];                |]|]
        [@bigarray.padding 0] ])
+
+let test_dynamic_layout () =
+  let x = c_layout in
+  let y = fortran_layout in
+  let mk layout arr = Array3.of_array int layout arr in
+  "x" @?
+  (mk x [|[|[|111; 112; 113|]; [|121; 122; 123|]; [|131; 132; 133|]|];
+          [|[|211; 212; 213|]; [|221; 222; 223|]; [|231; 232; 233|]|]|]
+   = [%bigarray3.int.x
+     [|[|[|111; 112; 113|]; [|121; 122; 123|]; [|131; 132; 133|]|];
+       [|[|211; 212; 213|]; [|221; 222; 223|]; [|231; 232; 233|]|]|] ]);
+  "y" @?
+  (mk y [|[|[|111; 112; 113|]; [|121; 122; 123|]; [|131; 132; 133|]|];
+          [|[|211; 212; 213|]; [|221; 222; 223|]; [|231; 232; 233|]|]|]
+   = [%bigarray3.int.y
+     [|[|[|111; 112; 113|]; [|121; 122; 123|]; [|131; 132; 133|]|];
+       [|[|211; 212; 213|]; [|221; 222; 223|]; [|231; 232; 233|]|]|] ])
 
 let suite =
   "ppx_bigarray" >::: [
@@ -88,32 +106,7 @@ let suite =
     "array3,kind=int,layout=Fortran" >:: test_array3_int_fortran;
     "padding,layout=C" >:: test_padding_c;
     "padding,layout=Fortran" >:: test_padding_fortran;
+    "dynamic-layout" >:: test_dynamic_layout;
   ]
 
 let () = run_test_tt_main suite |> ignore
-(*
-let f : type c. (int, _, c) Bigarray.Genarray.t -> unit
-  = fun x -> match Bigarray.Genarray.layout x with
-  | Bigarray.C_layout ->
-    Format.printf "C_layout:@.";
-    for i = 0 to 1 do
-      for j = 0 to 2 do
-        for k = 0 to 2 do
-          Format.printf "  x.{%d,%d,%d} = %d@." i j k
-            (Bigarray.Genarray.get x [|i;j;k|])
-        done
-      done
-    done
-  | Bigarray.Fortran_layout ->
-    Format.printf "Fortran_layout:@.";
-    for i = 1 to 2 do
-      for j = 1 to 3 do
-        for k = 1 to 3 do
-          Format.printf "x.{%d,%d,%d} = %d@." i j k
-            (Bigarray.Genarray.get x [|i;j;k|])
-        done
-      done
-    done
-
-let () = f x
-*)

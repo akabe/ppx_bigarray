@@ -36,10 +36,10 @@ let bigarray_kind_of_string = function
   | "char" -> NestedMatrix.Char
   | s -> NestedMatrix.Dynamic s
 
-let bigarray_layout_of_string ?loc = function
+let bigarray_layout_of_string = function
   | "c" | "c_layout" -> NestedMatrix.C_layout
   | "fortran" | "fortran_layout" -> NestedMatrix.Fortran_layout
-  | layout -> Error.exnf ?loc "Unknown big array layout `%s'" layout ()
+  | s -> NestedMatrix.Dynamic_layout s
 
 let check_nested_matrix size mat =
   let msg_head =
@@ -91,7 +91,7 @@ let map_ext_bigarray loc attrs ba_type kind layout = function
     in
     NestedMatrix.to_expression ~loc ~attrs:(warnings @ attrs @ attrs')
       ba_type (bigarray_kind_of_string kind)
-      (bigarray_layout_of_string ~loc layout) size mat'
+      (bigarray_layout_of_string layout) size mat'
   | _ -> Error.exnf ~loc
            "Syntax Error: @[This expression should be a list or an array@ \
             syntactically@]" ()

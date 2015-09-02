@@ -53,6 +53,7 @@ type bigarray_kind =
 type bigarray_layout =
   | C_layout
   | Fortran_layout
+  | Dynamic_layout of string
 
 val to_expression :
   ?loc:Location.t -> ?attrs:Parsetree.attribute list ->

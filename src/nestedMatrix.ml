@@ -151,10 +151,12 @@ let string_of_bigarray_kind = function
 type bigarray_layout =
   | C_layout
   | Fortran_layout
+  | Dynamic_layout of string
 
 let string_of_bigarray_layout = function
   | C_layout -> "Bigarray.c_layout"
   | Fortran_layout -> "Bigarray.fortran_layout"
+  | Dynamic_layout s -> s
 
 module Exp =
 struct
@@ -245,13 +247,25 @@ let calc_c_index size indices =
 let calc_fortran_index size indices =
   List.fold_right2 (fun n i acc -> n * acc + i) size indices 0 + 1
 
-let serialize layout size root =
-  let calc_index = match layout with
-    | C_layout -> calc_c_index size
-    | Fortran_layout -> calc_fortran_index size
-  in
+let rec mk_setter ?loc ~ret layout var size serialized_mat = match layout with
+  | C_layout ->
+    serialized_mat
+    |> List.map (fun (indices, expr) -> (calc_c_index size indices, expr))
+    |> Exp.Ba.array1_set_all ?loc ~ret var
+  | Fortran_layout ->
+    serialized_mat
+    |> List.map (fun (indices, expr) -> (calc_fortran_index size indices, expr))
+    |> Exp.Ba.array1_set_all ?loc ~ret var
+  | Dynamic_layout s ->
+    let e1 = Exp.apply ?loc (Exp.ident ?loc "Ppx_bigarray.is_c_layout")
+        [(Compat.nolabel, Exp.ident ?loc s)] in
+    let e2 = mk_setter ?loc ~ret C_layout var size serialized_mat in
+    let e3 = mk_setter ?loc ~ret Fortran_layout var size serialized_mat in
+    Exp.ifthenelse ?loc e1 e2 (Some e3)
+
+let serialize root =
   let rec aux indices node = match node with
-    | Leaf (_, expr) -> [(calc_index (List.rev indices), expr)]
+    | Leaf (_, expr) -> [(List.rev indices, expr)]
     | Node (_, children) ->
       List.mapi (fun i -> aux (i :: indices)) children
       |> List.flatten
@@ -263,13 +277,13 @@ let to_expression ?(loc = !default_loc) ?attrs ba_type kind layout size mat =
   let var = Exp.ident ~loc name in
   let dim = List.fold_left ( * ) 1 size in
   let arr1 = Exp.Ba.array1_create ~loc kind layout dim in
-  let genarr = Exp.Ba.genarray_of_array1 ~loc var in
-  let retarr = match ba_type with
-    | Array1 -> Exp.Ba.reshape_1 ~loc genarr size
-    | Array2 -> Exp.Ba.reshape_2 ~loc genarr size
-    | Array3 -> Exp.Ba.reshape_3 ~loc genarr size
-    | Genarray -> Exp.Ba.reshape ~loc genarr size in
   mat
-  |> serialize layout size
-  |> Exp.Ba.array1_set_all ~loc ~ret:retarr var
-  |> Exp.letval ~loc ?attrs name arr1
+  |> serialize
+  |> mk_setter ~loc ~ret:var layout var size
+  |> Exp.letval ~loc ?attrs:None name arr1
+  |> Exp.Ba.genarray_of_array1 ~loc ?attrs:None
+  |> (fun genarr -> match ba_type with
+      | Array1 -> Exp.Ba.reshape_1 ~loc ?attrs genarr size
+      | Array2 -> Exp.Ba.reshape_2 ~loc ?attrs genarr size
+      | Array3 -> Exp.Ba.reshape_3 ~loc ?attrs genarr size
+      | Genarray -> Exp.Ba.reshape ~loc ?attrs genarr size)

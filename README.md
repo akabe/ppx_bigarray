@@ -25,6 +25,16 @@ make install
 Usage
 -----
 
+### Compile
+
+```
+ocamlfind ocamlc -package ppx_bigarray -linkpkg foo.ml
+```
+
+`ppx_bigarray` outputs code that depends on `Ppx_bigarray` module, so that
+you need to link it in addition to option `-ppx`. `ocamlfind`
+is useful for passing suitable compiler options.
+
 ### Example
 
 `x` is a two-dimensional big array that has size 3-by-4, kind `Bigarray.int`,

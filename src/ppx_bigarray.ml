@@ -4,4 +4,8 @@
    This software is distributed under MIT License
    See LICENSE.txt for details. *)
 
-(** This is a dummy module for ppx_bigarray. *)
+(** This is an auxiliary module for ppx_bigarray. *)
+
+let is_c_layout : type a. a Bigarray.layout -> bool = function
+  | Bigarray.C_layout -> true
+  | Bigarray.Fortran_layout -> false
