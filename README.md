@@ -110,6 +110,16 @@ You can specify the following identifiers as `KIND` and `LAYOUT`:
 | `fortran` or `fortran_layout` | `Bigarray.fortran_layout`                                 |
 | otherwise                     | (to refer the variable that has a given name as a layout) |
 
+"otherwise" in the above tables means that users can specify user-defined names of kinds and
+layouts in addition to built-in names, like the following code:
+
+```OCaml
+let f32 = Bigarray.float32
+let f = Bigarray.fortran_layout
+let x = [%bigarray1.f32.f [1.0; 2.0; 3.0]] (* Use `f32' and `f' instead of
+                                              float32 and fortran_layout, respectively. *)
+```
+
 ### Padding
 
 By default, `ppx_bigarray` warns non-rectangular big array literals in compile time,
