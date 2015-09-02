@@ -6,6 +6,7 @@ ppx_bigarray
 This PPX extension provides
 [big array](http://caml.inria.fr/pub/docs/manual-ocaml/libref/Bigarray.html)
 literals in [OCaml](http://ocaml.org).
+This software is distributed under MIT License.
 
 Install
 -------
@@ -155,3 +156,6 @@ let ppx_bigarray__z = {
 (* %bigarray1.z is the same as %bigarray1.complex64.fortran_layout. *)
 let x = [%bigarray1.z [...]]
 ```
+
+`[%bigarray.ALIAS ...]` refers `ppx_bigarray__ALIAS.Ppx_bigarray.kind`
+as a kind, and `ppx_bigarray__ALIAS.Ppx_bigarray.layout` as a layout.
