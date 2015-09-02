@@ -104,10 +104,11 @@ You can specify the following identifiers as `KIND` and `LAYOUT`:
 | `char`                       | `Bigarray.char`                                         |
 | otherwise                    | (to refer the variable that has a given name as a kind) |
 
-| `LAYOUT`                      | Corresponding big array layout |
-|-------------------------------|--------------------------------|
-| `c` or `c_layout`             | `Bigarray.c_layout`            |
-| `fortran` or `fortran_layout` | `Bigarray.fortran_layout`      |
+| `LAYOUT`                      | Corresponding big array layout                            |
+|-------------------------------|-----------------------------------------------------------|
+| `c` or `c_layout`             | `Bigarray.c_layout`                                       |
+| `fortran` or `fortran_layout` | `Bigarray.fortran_layout`                                 |
+| otherwise                     | (to refer the variable that has a given name as a layout) |
 
 ### Padding
 
