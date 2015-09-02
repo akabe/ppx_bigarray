@@ -25,7 +25,7 @@ Library ppx_bigarray
 Executable ppx_bigarray
   Path:                 src
   MainIs:               ppx_bigarray_ex.ml
-  BuildDepends:         compiler-libs.common,batteries
+  BuildDepends:         compiler-libs.common
   Install:              true
   CompiledObject:       best
 

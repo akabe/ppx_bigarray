@@ -4,7 +4,24 @@
    This software is distributed under MIT License
    See LICENSE.txt for details. *)
 
-open Batteries
+module List =
+struct
+  include List
+
+  let init n f =
+    let rec aux acc i = if i < 0 then acc else aux (f i :: acc) (i - 1) in
+    aux [] (n - 1)
+
+  let make n x = init n (fun _ -> x)
+
+  let take n l =
+    let rec aux acc n l = match n, l with
+      | 0, _ -> List.rev acc
+      | _, hd :: tl -> aux (hd :: acc) (n - 1) tl
+      | _ -> failwith "List.take"
+    in
+    aux [] n l
+end
 
 type ('a, 'b) t =
   | Leaf of 'a * 'b
@@ -52,12 +69,12 @@ let make_padding x y =
 
 let pad size root x y =
   let rec aux size node = match size, node with
-    | m :: size', Node (x, children) ->
+    | m :: size', Node (z, children) ->
       let children' = List.map (aux size') children in
       let n = List.length children in
-      if m = n then Node (x, children')
-      else if m < n then Node (x, List.take m children')
-      else Node (x, children' @ List.make (m - n) (make_padding x y size'))
+      if m = n then Node (z, children')
+      else if m < n then Node (z, List.take m children')
+      else Node (z, children' @ List.make (m - n) (make_padding x y size'))
     | _ -> node
   in
   aux size root

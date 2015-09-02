@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: c013f00a526fa780ba242d89e2ce43ba)
+# DO NOT EDIT (digest: b51a54a0e9cd20e4dd37a53311a102ba)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -17,9 +17,7 @@ true: annot, bin_annot
 # Library ppx_bigarray
 "src/ppx_bigarray.cmxs": use_ppx_bigarray
 # Executable ppx_bigarray
-<src/ppx_bigarray_ex.{native,byte}>: package(batteries)
 <src/ppx_bigarray_ex.{native,byte}>: package(compiler-libs.common)
-<src/*.ml{,i,y}>: package(batteries)
 <src/*.ml{,i,y}>: package(compiler-libs.common)
 # Executable test
 <test/test.{native,byte}>: package(bigarray)

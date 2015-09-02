@@ -4,7 +4,6 @@
    This software is distributed under MIT License
    See LICENSE.txt for details. *)
 
-open Batteries
 open Format
 open Ast_helper
 open Ast_mapper
