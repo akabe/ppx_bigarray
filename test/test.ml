@@ -96,6 +96,28 @@ let test_dynamic_layout () =
      [|[|[|111; 112; 113|]; [|121; 122; 123|]; [|131; 132; 133|]|];
        [|[|211; 212; 213|]; [|221; 222; 223|]; [|231; 232; 233|]|]|] ])
 
+let test_alias () =
+  let ppx_bigarray__x = Ppx_bigarray.({ kind = Bigarray.int;
+                                        layout = Bigarray.c_layout; }) in
+  let ppx_bigarray__y = Ppx_bigarray.({ kind = Bigarray.int16_signed;
+                                        layout = Bigarray.fortran_layout; }) in
+  let mk alias arr =
+    Array3.of_array alias.Ppx_bigarray.kind alias.Ppx_bigarray.layout arr in
+  "x" @?
+  (mk ppx_bigarray__x
+     [|[|[|111; 112; 113|]; [|121; 122; 123|]; [|131; 132; 133|]|];
+       [|[|211; 212; 213|]; [|221; 222; 223|]; [|231; 232; 233|]|]|]
+   = [%bigarray3.x
+     [|[|[|111; 112; 113|]; [|121; 122; 123|]; [|131; 132; 133|]|];
+       [|[|211; 212; 213|]; [|221; 222; 223|]; [|231; 232; 233|]|]|] ]);
+  "y" @?
+  (mk ppx_bigarray__y
+     [|[|[|111; 112; 113|]; [|121; 122; 123|]; [|131; 132; 133|]|];
+       [|[|211; 212; 213|]; [|221; 222; 223|]; [|231; 232; 233|]|]|]
+   = [%bigarray3.y
+     [|[|[|111; 112; 113|]; [|121; 122; 123|]; [|131; 132; 133|]|];
+       [|[|211; 212; 213|]; [|221; 222; 223|]; [|231; 232; 233|]|]|] ])
+
 let suite =
   "ppx_bigarray" >::: [
     "array1,kind=int,layout=C" >:: test_array1_int_c;
@@ -107,6 +129,7 @@ let suite =
     "padding,layout=C" >:: test_padding_c;
     "padding,layout=Fortran" >:: test_padding_fortran;
     "dynamic-layout" >:: test_dynamic_layout;
+    "alias" >:: test_alias;
   ]
 
 let () = run_test_tt_main suite |> ignore

@@ -6,6 +6,12 @@
 
 (** This is an auxiliary module for ppx_bigarray. *)
 
+type ('a, 'b, 'c) alias =
+  {
+    kind : ('a, 'b) Bigarray.kind;
+    layout : 'c Bigarray.layout;
+  }
+
 let is_c_layout : type a. a Bigarray.layout -> bool = function
   | Bigarray.C_layout -> true
   | Bigarray.Fortran_layout -> false

@@ -137,3 +137,21 @@ let x = [%bigarray2.int.c
 ```
 
 In this case, lacked elements are initialized by `0`.
+
+### Alias
+
+`[%bigarray.KIND.LAYOUT ...]` is slightly verbose syntax because
+we usually use a few combinations of big array kinds and layouts.
+You can define aliases of pairs of a kind and a layout that
+you frequently use as follows:
+
+```OCaml
+(* `z' is an alias of complex64.fortran_layout. *)
+let ppx_bigarray__z = {
+    Ppx_bigarray.kind = Bigarray.complex64;
+    Ppx_bigarray.layout = Bigarray.fortran_layout;
+  }
+
+(* %bigarray1.z is the same as %bigarray1.complex64.fortran_layout. *)
+let x = [%bigarray1.z [...]]
+```

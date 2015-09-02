@@ -48,12 +48,12 @@ type bigarray_kind =
   | Complex32
   | Complex64
   | Char
-  | Dynamic of string
+  | Dynamic of Parsetree.expression
 
 type bigarray_layout =
   | C_layout
   | Fortran_layout
-  | Dynamic_layout of string
+  | Dynamic_layout of Parsetree.expression
 
 val to_expression :
   ?loc:Location.t -> ?attrs:Parsetree.attribute list ->

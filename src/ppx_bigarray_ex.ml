@@ -20,7 +20,7 @@ let rec split chr offset str =
   with _ ->
     [String.sub str offset (String.length str - offset)]
 
-let bigarray_kind_of_string = function
+let bigarray_kind_of_string ~loc = function
   | "float32" -> NestedMatrix.Float32
   | "float64" -> NestedMatrix.Float64
   | "int8_signed" | "sint8" -> NestedMatrix.Int8_signed
@@ -34,12 +34,12 @@ let bigarray_kind_of_string = function
   | "complex32" -> NestedMatrix.Complex32
   | "complex64" -> NestedMatrix.Complex64
   | "char" -> NestedMatrix.Char
-  | s -> NestedMatrix.Dynamic s
+  | s -> NestedMatrix.Dynamic (ExtAst.Exp.ident ~loc s)
 
-let bigarray_layout_of_string = function
+let bigarray_layout_of_string ~loc = function
   | "c" | "c_layout" -> NestedMatrix.C_layout
   | "fortran" | "fortran_layout" -> NestedMatrix.Fortran_layout
-  | s -> NestedMatrix.Dynamic_layout s
+  | s -> NestedMatrix.Dynamic_layout (ExtAst.Exp.ident ~loc s)
 
 let check_nested_matrix size mat =
   let msg_head =
@@ -77,7 +77,7 @@ let get_padding loc attrs =
   | _ ->
     Error.exnf ~loc "Error: @[Duplicated bigarray.padding attributes@]" ()
 
-let map_ext_bigarray loc attrs ba_type kind layout = function
+let make_bigarray_literal loc attrs ba_type kind layout = function
   | PStr [{ pstr_desc = Pstr_eval (expr, _); _ }] -> (* [%ext expression] *)
     let (padding, attrs') = get_padding loc expr.pexp_attributes in
     let mat = NestedMatrix.of_expression expr in
@@ -90,11 +90,23 @@ let map_ext_bigarray loc attrs ba_type kind layout = function
         (NestedMatrix.pad size mat ep.pexp_loc ep, [])
     in
     NestedMatrix.to_expression ~loc ~attrs:(warnings @ attrs @ attrs')
-      ba_type (bigarray_kind_of_string kind)
-      (bigarray_layout_of_string layout) size mat'
+      ba_type kind layout size mat'
   | _ -> Error.exnf ~loc
            "Syntax Error: @[This expression should be a list or an array@ \
             syntactically@]" ()
+
+let map_ext_bigarray loc attrs ba_type kind layout payload =
+  make_bigarray_literal loc attrs ba_type
+    (bigarray_kind_of_string ~loc kind)
+    (bigarray_layout_of_string ~loc layout) payload
+
+let map_ext_bigarray_alias loc attrs ba_type name payload =
+  let alias = ExtAst.Exp.ident ~loc ("ppx_bigarray__" ^ name) in
+  let kind = NestedMatrix.Dynamic
+      (ExtAst.Exp.field ~loc alias "Ppx_bigarray.kind") in
+  let layout = NestedMatrix.Dynamic_layout
+      (ExtAst.Exp.field ~loc alias "Ppx_bigarray.layout") in
+  make_bigarray_literal loc attrs ba_type kind layout payload
 
 let bigarray_mapper =
   let super = default_mapper in
@@ -113,6 +125,14 @@ let bigarray_mapper =
             map_ext_bigarray loc attrs NestedMatrix.Array3 kind layout payload
           | ["bigarray"; kind; layout] ->
             map_ext_bigarray loc attrs NestedMatrix.Genarray kind layout payload
+          | ["bigarray1"; alias] ->
+            map_ext_bigarray_alias loc attrs NestedMatrix.Array1 alias payload
+          | ["bigarray2"; alias] ->
+            map_ext_bigarray_alias loc attrs NestedMatrix.Array2 alias payload
+          | ["bigarray3"; alias] ->
+            map_ext_bigarray_alias loc attrs NestedMatrix.Array3 alias payload
+          | ["bigarray"; alias] ->
+            map_ext_bigarray_alias loc attrs NestedMatrix.Genarray alias payload
           | _ -> super.expr self e
         with
         | Location.Error error ->

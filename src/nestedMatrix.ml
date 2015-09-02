@@ -130,56 +130,51 @@ type bigarray_kind =
   | Complex32
   | Complex64
   | Char
-  | Dynamic of string
-
-let string_of_bigarray_kind = function
-  | Float32 -> "Bigarray.float32"
-  | Float64 -> "Bigarray.float64"
-  | Int8_signed -> "Bigarray.int8_signed"
-  | Int8_unsigned -> "Bigarray.int8_unsigned"
-  | Int16_signed -> "Bigarray.int16_signed"
-  | Int16_unsigned -> "Bigarray.int16_unsigned"
-  | Int32 -> "Bigarray.int32"
-  | Int64 -> "Bigarray.int64"
-  | Int -> "Bigarray.int"
-  | Nativeint -> "Bigarray.nativeint"
-  | Complex32 -> "Bigarray.complex32"
-  | Complex64 -> "Bigarray.complex64"
-  | Char -> "Bigarray.char"
-  | Dynamic s -> s
+  | Dynamic of Parsetree.expression
 
 type bigarray_layout =
   | C_layout
   | Fortran_layout
-  | Dynamic_layout of string
-
-let string_of_bigarray_layout = function
-  | C_layout -> "Bigarray.c_layout"
-  | Fortran_layout -> "Bigarray.fortran_layout"
-  | Dynamic_layout s -> s
+  | Dynamic_layout of Parsetree.expression
 
 module Exp =
 struct
-  include Ast_helper.Exp
-
-  let int ?loc ?attrs n = constant ?loc ?attrs (Const_int n)
-
-  let ident ?(loc = !Ast_helper.default_loc) ?attrs str =
-    ident ~loc ?attrs { Location.loc; Location.txt = Longident.parse str; }
-
-  let letval ?(loc = !Ast_helper.default_loc) ?attrs str rhs body =
-    let pat = Pat.var ~loc { Location.txt = str; Location.loc; } in
-    let_ ~loc ?attrs Nonrecursive [Vb.mk ~loc pat rhs] body
+  include ExtAst.Exp
 
   (** Create expressions related to big arrays *)
   module Ba =
   struct
-    let array1_create ?loc ?attrs kind layout dim =
-      let kind = ident ?loc (string_of_bigarray_kind kind) in
-      let layout = ident ?loc (string_of_bigarray_layout layout) in
+    let kind ?loc ?attrs =
+      let id = ident ?loc ?attrs in
+      function
+      | Float32 -> id "Bigarray.float32"
+      | Float64 -> id "Bigarray.float64"
+      | Int8_signed -> id "Bigarray.int8_signed"
+      | Int8_unsigned -> id "Bigarray.int8_unsigned"
+      | Int16_signed -> id "Bigarray.int16_signed"
+      | Int16_unsigned -> id "Bigarray.int16_unsigned"
+      | Int32 -> id "Bigarray.int32"
+      | Int64 -> id "Bigarray.int64"
+      | Int -> id "Bigarray.int"
+      | Nativeint -> id "Bigarray.nativeint"
+      | Complex32 -> id "Bigarray.complex32"
+      | Complex64 -> id "Bigarray.complex64"
+      | Char -> id "Bigarray.char"
+      | Dynamic expr -> expr
+
+    let layout ?loc ?attrs =
+      let id = ident ?loc ?attrs in
+      function
+      | C_layout -> id "Bigarray.c_layout"
+      | Fortran_layout -> id "Bigarray.fortran_layout"
+      | Dynamic_layout expr -> expr
+
+    let array1_create ?loc ?attrs kind_ layout_ dim =
+      let kind_ = kind ?loc kind_ in
+      let layout_ = layout ?loc layout_ in
       let dim = int ?loc dim in
       let f = ident ?loc "Bigarray.Array1.create" in
-      apply ?loc ?attrs f [(Compat.nolabel, kind); (Compat.nolabel, layout);
+      apply ?loc ?attrs f [(Compat.nolabel, kind_); (Compat.nolabel, layout_);
                            (Compat.nolabel, dim)]
 
     let array1_set ?loc ?attrs ba index rhs =
@@ -256,9 +251,9 @@ let rec mk_setter ?loc ~ret layout var size serialized_mat = match layout with
     serialized_mat
     |> List.map (fun (indices, expr) -> (calc_fortran_index size indices, expr))
     |> Exp.Ba.array1_set_all ?loc ~ret var
-  | Dynamic_layout s ->
+  | Dynamic_layout expr ->
     let e1 = Exp.apply ?loc (Exp.ident ?loc "Ppx_bigarray.is_c_layout")
-        [(Compat.nolabel, Exp.ident ?loc s)] in
+        [(Compat.nolabel, expr)] in
     let e2 = mk_setter ?loc ~ret C_layout var size serialized_mat in
     let e3 = mk_setter ?loc ~ret Fortran_layout var size serialized_mat in
     Exp.ifthenelse ?loc e1 e2 (Some e3)
