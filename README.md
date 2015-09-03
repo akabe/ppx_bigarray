@@ -6,7 +6,6 @@ ppx_bigarray
 This PPX extension provides
 [big array](http://caml.inria.fr/pub/docs/manual-ocaml/libref/Bigarray.html)
 literals in [OCaml](http://ocaml.org).
-This software is distributed under MIT License.
 
 Install
 -------
@@ -26,7 +25,7 @@ make install
 Usage
 -----
 
-### Compile
+### Compiling
 
 ```
 ocamlfind ocamlc -package ppx_bigarray -linkpkg foo.ml
@@ -123,9 +122,11 @@ let x = [%bigarray1.f32.f [1.0; 2.0; 3.0]] (* Use `f32' and `f' instead of
 
 ### Padding
 
-By default, `ppx_bigarray` warns non-rectangular big array literals in compile time,
-and lacked elements are uninitialized.
-While, you can inhibit the warning by using `[@bigarray.padding EXPRESSION]`:
+Big arrays of two or more dimensions need to be rectangular.
+If you write a non-rectangular big array literal, by default, `ppx_bigarray` warns
+it in compile time (Warning 22), and lacked elements are uninitialized.
+You can explicitly specify padding, a value of lacked elements by
+`[@bigarray.padding EXPRESSION]`:
 
 ```OCaml
 let x = [%bigarray2.int.c
@@ -137,7 +138,20 @@ let x = [%bigarray2.int.c
         ]
 ```
 
-In this case, lacked elements are initialized by `0`.
+In this case, lacked elements are initialized by `0`, i.e., the above code
+is the same as
+
+```OCaml
+let x = [%bigarray2.int.c
+          [
+            [11; 12; 13; 14];
+            [21; 22; 23;  0];
+            [31; 32;  0;  0];
+          ]
+        ]
+```
+
+`[@bigarray.padding]` inhibits the warnings for non-rectangular big array literals.
 
 ### Alias
 
