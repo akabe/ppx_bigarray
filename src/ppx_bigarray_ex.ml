@@ -79,8 +79,13 @@ let get_padding loc attrs =
 
 let make_bigarray_literal loc attrs ba_type kind layout = function
   | PStr [{ pstr_desc = Pstr_eval (expr, _); _ }] -> (* [%ext expression] *)
+    let level = match ba_type with
+      | NestedMatrix.Array1 -> Some 1
+      | NestedMatrix.Array2 -> Some 2
+      | NestedMatrix.Array3 -> Some 3
+      | NestedMatrix.Genarray -> None in
     let (padding, attrs') = get_padding loc expr.pexp_attributes in
-    let mat = NestedMatrix.of_expression expr in
+    let mat = NestedMatrix.of_expression ?level expr in
     let size = NestedMatrix.size mat in
     let (mat', warnings) =
       match padding with

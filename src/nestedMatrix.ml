@@ -101,10 +101,19 @@ let get_elements =
   function
   | { pexp_desc = Pexp_array exprs; _ } -> Some exprs
   | expr -> from_list [] expr
-
+(*
 let rec of_expression expr = match get_elements expr with
   | None -> Leaf (expr.pexp_loc, expr)
   | Some exprs -> Node (expr.pexp_loc, List.map of_expression exprs)
+                  *)
+let of_expression ?(level = max_int) expr =
+  let rec aux level expr =
+    if level = 0 then Leaf (expr.pexp_loc, expr)
+    else match get_elements expr with
+      | None -> Leaf (expr.pexp_loc, expr)
+      | Some exprs -> Node (expr.pexp_loc, List.map (aux (level - 1)) exprs)
+  in
+  aux level expr
 
 (** {2 Conversion into OCaml expressions} *)
 

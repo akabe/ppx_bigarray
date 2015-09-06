@@ -24,7 +24,8 @@ val pad : int list -> ('a, 'b) t -> 'a -> 'b -> ('a, 'b) t
 
 (** {2 Conversion from OCaml expressions} *)
 
-val of_expression : Parsetree.expression -> (Location.t, Parsetree.expression) t
+val of_expression :
+  ?level:int -> Parsetree.expression -> (Location.t, Parsetree.expression) t
 
 (** {2 Conversion into OCaml expressions} *)
 
