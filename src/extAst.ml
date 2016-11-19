@@ -16,7 +16,7 @@ module Exp =
 struct
   include Ast_helper.Exp
 
-  let int ?loc ?attrs n = constant ?loc ?attrs (Const_int n)
+  let int ?loc ?attrs n = constant ?loc ?attrs (Pconst_integer (string_of_int n, None))
 
   let ident ?loc ?attrs str = ident ?loc ?attrs (lid ?loc str)
 
