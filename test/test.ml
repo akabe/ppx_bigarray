@@ -97,12 +97,12 @@ let test_dynamic_layout () =
        [|[|211; 212; 213|]; [|221; 222; 223|]; [|231; 232; 233|]|]|] ])
 
 let test_alias () =
-  let ppx_bigarray__x = Ppx_bigarray.({ kind = Bigarray.int;
-                                        layout = Bigarray.c_layout; }) in
-  let ppx_bigarray__y = Ppx_bigarray.({ kind = Bigarray.int16_signed;
-                                        layout = Bigarray.fortran_layout; }) in
-  let mk alias arr =
-    Array3.of_array alias.Ppx_bigarray.kind alias.Ppx_bigarray.layout arr in
+  let open Ppx_bigarray_runtime in
+  let ppx_bigarray__x = { kind = Bigarray.int;
+                          layout = Bigarray.c_layout; } in
+  let ppx_bigarray__y = { kind = Bigarray.int16_signed;
+                          layout = Bigarray.fortran_layout; } in
+  let mk alias arr = Array3.of_array alias.kind alias.layout arr in
   "x" @?
   (mk ppx_bigarray__x
      [|[|[|111; 112; 113|]; [|121; 122; 123|]; [|131; 132; 133|]|];

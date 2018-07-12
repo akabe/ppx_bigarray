@@ -4,6 +4,8 @@
    This software is distributed under MIT License
    See LICENSE.txt for details. *)
 
+open Compat
+
 module List =
 struct
   include List
@@ -183,14 +185,14 @@ struct
       let layout_ = layout ?loc layout_ in
       let dim = int ?loc dim in
       let f = ident ?loc "Bigarray.Array1.create" in
-      apply ?loc ?attrs f [(Compat.nolabel, kind_); (Compat.nolabel, layout_);
-                           (Compat.nolabel, dim)]
+      apply ?loc ?attrs f [(Asttypes.Nolabel, kind_); (Asttypes.Nolabel, layout_);
+                           (Asttypes.Nolabel, dim)]
 
     let array1_set ?loc ?attrs ba index rhs =
       let index = int ?loc index in
       let f = ident ?loc "Bigarray.Array1.unsafe_set" in
-      apply ?loc ?attrs f [(Compat.nolabel, ba); (Compat.nolabel, index);
-                           (Compat.nolabel, rhs)]
+      apply ?loc ?attrs f [(Asttypes.Nolabel, ba); (Asttypes.Nolabel, index);
+                           (Asttypes.Nolabel, rhs)]
 
     let array1_set_all ?loc ?attrs ~ret ba vals =
       vals
@@ -200,7 +202,7 @@ struct
 
     let genarray_of_array1 ?loc ?attrs ba =
       let f = ident ?loc "Bigarray.genarray_of_array1" in
-      apply ?loc ?attrs f [(Compat.nolabel, ba)]
+      apply ?loc ?attrs f [(Asttypes.Nolabel, ba)]
 
     let reshape_1 ?loc ?attrs ba size =
       let n = match size with
@@ -210,7 +212,7 @@ struct
                  "Error: @[This literal expects 1-dimensional big array@\n\
                   but the size is %s@." (string_of_size size) () in
       let f = ident ?loc "Bigarray.reshape_1" in
-      apply ?loc ?attrs f [(Compat.nolabel, ba); (Compat.nolabel, int ?loc n)]
+      apply ?loc ?attrs f [(Asttypes.Nolabel, ba); (Asttypes.Nolabel, int ?loc n)]
 
     let reshape_2 ?loc ?attrs ba size =
       let (m, n) = match size with
@@ -221,8 +223,8 @@ struct
                  "Error: @[This literal expects 2-dimensional big array@\n\
                   but the size is %s@." (string_of_size size) () in
       let f = ident ?loc "Bigarray.reshape_2" in
-      apply ?loc ?attrs f [(Compat.nolabel, ba); (Compat.nolabel, int ?loc m);
-                           (Compat.nolabel, int ?loc n)]
+      apply ?loc ?attrs f [(Asttypes.Nolabel, ba); (Asttypes.Nolabel, int ?loc m);
+                           (Asttypes.Nolabel, int ?loc n)]
 
     let reshape_3 ?loc ?attrs ba size =
       let (m, n, k) = match size with
@@ -234,14 +236,14 @@ struct
                  "Error: @[This literal expects 3-dimensional big array@\n\
                   but the size is %s@." (string_of_size size) () in
       let f = ident ?loc "Bigarray.reshape_3" in
-      apply ?loc ?attrs f [(Compat.nolabel, ba); (Compat.nolabel, int ?loc m);
-                           (Compat.nolabel, int ?loc n);
-                           (Compat.nolabel, int ?loc k)]
+      apply ?loc ?attrs f [(Asttypes.Nolabel, ba); (Asttypes.Nolabel, int ?loc m);
+                           (Asttypes.Nolabel, int ?loc n);
+                           (Asttypes.Nolabel, int ?loc k)]
 
     let reshape ?loc ?attrs ba size =
       let f = ident ?loc "Bigarray.reshape" in
       let dims = array ?loc (List.map (int ?loc ?attrs:None) size) in
-      apply ?loc ?attrs f [(Compat.nolabel, ba); (Compat.nolabel, dims)]
+      apply ?loc ?attrs f [(Asttypes.Nolabel, ba); (Asttypes.Nolabel, dims)]
   end
 end
 
@@ -261,8 +263,8 @@ let rec mk_setter ?loc ~ret layout var size serialized_mat = match layout with
     |> List.map (fun (indices, expr) -> (calc_fortran_index size indices, expr))
     |> Exp.Ba.array1_set_all ?loc ~ret var
   | Dynamic_layout expr ->
-    let e1 = Exp.apply ?loc (Exp.ident ?loc "Ppx_bigarray.is_c_layout")
-        [(Compat.nolabel, expr)] in
+    let e1 = Exp.apply ?loc (Exp.ident ?loc "Ppx_bigarray_runtime.is_c_layout")
+        [(Asttypes.Nolabel, expr)] in
     let e2 = mk_setter ?loc ~ret C_layout var size serialized_mat in
     let e3 = mk_setter ?loc ~ret Fortran_layout var size serialized_mat in
     Exp.ifthenelse ?loc e1 e2 (Some e3)

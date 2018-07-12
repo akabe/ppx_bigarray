@@ -1,19 +1,4 @@
-*~
-*.annot
-*.cmo
-*.cma
-*.cmi
-*.a
-*.o
-*.cmx
-*.cmxs
-*.cmxa
-*.cmt
-*.cmti
-
+# jbuilder generated files
 _build/
-/setup.data
-/setup.log
-*.docdir
-*.byte
-*.native
+.merlin
+*.install

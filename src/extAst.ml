@@ -7,7 +7,6 @@
 open Ast_helper
 open Asttypes
 open Parsetree
-open Longident
 
 let lid ?(loc = !default_loc) str =
   { Location.loc; Location.txt = Longident.parse str; }
