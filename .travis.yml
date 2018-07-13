@@ -2,11 +2,39 @@ language: c
 sudo: false
 cache: apt
 
-script: bash -eu .travis-ci.sh
-
 os:
   - linux
 env:
-  matrix:
-    - OCAML_VERSION=4.03.0 OPAM_VERSION=1.2.2
-    - OCAML_VERSION=4.04.0 OPAM_VERSION=1.2.2
+  global:
+    - OPAM_PREFIX=$HOME/.mine
+    - PATH=$PATH:$OPAM_PREFIX/bin
+
+matrix:
+  include:
+    - env: OCAML_VERSION=4.03.0 OPAM_VERSION=1.2.2
+    - env: OCAML_VERSION=4.04.0 OPAM_VERSION=1.2.2
+    - env: OCAML_VERSION=4.05.0 OPAM_VERSION=1.2.2
+    - env: OCAML_VERSION=4.06.0 OPAM_VERSION=1.2.2
+    - env: OCAML_VERSION=4.07.0 OPAM_VERSION=1.2.2
+    - env: OCAML_VERSION=4.08.0+trunk OPAM_VERSION=1.2.2
+  allow_failures:
+    - env: OCAML_VERSION=4.08.0+trunk OPAM_VERSION=1.2.2
+
+before_script:
+  - curl -L https://gist.githubusercontent.com/akabe/24979afbf95c4cf4393f589cda997e1b/raw/install_opam.sh | sh -xeu
+  - eval $(opam config env)
+  - opam install -y ocamlfind 'ounit>=2.0.0'
+  - opam remove ppx_bigarray # remove the package in cache (if it exists)
+
+script:
+  # lint
+  - opam lint ppx_bigarray.opam
+  # installation
+  - opam pin add ppx_bigarray . -y --verbose
+  - opam info ppx_bigarray # package is installed.
+  - ocamlfind query ppx_bigarray
+  # unit tests
+  - jbuilder runtest
+  # uninstallation
+  - opam remove ppx_bigarray --verbose
+  - (! ocamlfind query ppx_bigarray)

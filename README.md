@@ -14,12 +14,10 @@ Install
 opam install ppx_bigarray
 ```
 
-or
+Development version:
 
 ```
-./configure
-make
-make install
+opam pin add ppx_deriving https://github.com/akabe/ppx_bigarray.git
 ```
 
 Usage
@@ -28,12 +26,17 @@ Usage
 ### Compiling
 
 ```
-ocamlfind ocamlc -package ppx_bigarray -linkpkg foo.ml
+ocamlfind ocamlc -package bigarray,ppx_bigarray -linkpkg foo.ml
 ```
 
-`ppx_bigarray` outputs code that depends on `Ppx_bigarray` module, so that
-you need to link it in addition to option `-ppx`. `ocamlfind`
-is useful for passing suitable compiler options.
+`ppx_bigarray` outputs code that depends on the runtime library `ppx_bigarray.runtime` (`Ppx_bigarray_runtime` module).
+
+If you use [Dune](https://github.com/ocaml/dune) (jbuilder), `dune` file is like
+
+``` lisp
+  (libraries  ppx_bigarray.runtime)
+  (preprocess (pps ppx_bigarray))
+```
 
 ### Example
 
@@ -162,14 +165,14 @@ you frequently use as follows:
 
 ```OCaml
 (* `z' is an alias of complex64.fortran_layout. *)
-let ppx_bigarray__z = {
-    Ppx_bigarray.kind = Bigarray.complex64;
-    Ppx_bigarray.layout = Bigarray.fortran_layout;
-  }
+let ppx_bigarray__z = Ppx_bigarray_runtime.({
+    kind = Bigarray.complex64;
+    layout = Bigarray.fortran_layout;
+  })
 
 (* %bigarray1.z is the same as %bigarray1.complex64.fortran_layout. *)
 let x = [%bigarray1.z [...]]
 ```
 
-`[%bigarray.ALIAS ...]` refers `ppx_bigarray__ALIAS.Ppx_bigarray.kind`
-as a kind, and `ppx_bigarray__ALIAS.Ppx_bigarray.layout` as a layout.
+`[%bigarray.ALIAS ...]` refers `ppx_bigarray__ALIAS.Ppx_bigarray_runtime.kind`
+as a kind, and `ppx_bigarray__ALIAS.Ppx_bigarray_runtime.layout` as a layout.
